@@ -1,7 +1,8 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TabDemo.MainPage"
-             BackgroundColor="White">
+             xmlns:viewmodels="clr-namespace:TabDemo.MVVM.ViewModels"
+             x:DataType="viewmodels:MainPageViewModel">
 
     <Grid RowDefinitions="Auto, *">
 
@@ -19,11 +20,11 @@
         </ScrollView>
 
         <!-- Tab Content Area -->
-        <ContentView x:Name="TabContentArea"
-                     Grid.Row="1"
+        <ContentView Grid.Row="1"
                      Padding="20"
-                     BackgroundColor="White">
-            <Label Text="No tabs open." FontSize="18" />
+                     BackgroundColor="White"
+                     Content="{Binding ActiveContent}">
+            <!--<Label Text="No tabs open." FontSize="18" />-->
         </ContentView>
 
     </Grid>

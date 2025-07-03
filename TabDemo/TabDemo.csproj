@@ -65,7 +65,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Views\WorkspaceView.xaml">
+	  <MauiXaml Update="MVVM\Views\WorkspaceView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

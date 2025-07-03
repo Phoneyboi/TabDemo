@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using TabDemo.MVVM.Models;
+using TabDemo.MVVM.ViewModels;
 using TabDemo.Views;
 
 
@@ -6,34 +8,40 @@ namespace TabDemo;
 
 public partial class MainPage : ContentPage
 {
-	private ObservableCollection<TabInfo> openTabs = new();
-	private Dictionary<Guid, View> tabContentLookup = new();
-	private Guid? activeTabId = null;
+	private MainPageViewModel ViewModel => BindingContext as MainPageViewModel;
 
 	public MainPage()
 	{
 		InitializeComponent();
+		BindingContext = new MainPageViewModel();
 	}
 
 	private void OnNewTabClicked(object sender, EventArgs e)
 	{
-		var tabId = Guid.NewGuid();
-		var title = $"Tab {openTabs.Count + 1}";
+		ViewModel.AddNewTab();
+		RebuildTabHeaders();
+	}
 
-		var tab = new TabInfo { Id = tabId, Title = title };
-		openTabs.Add(tab);
+	private void RebuildTabHeaders()
+	{
+		TabHeaderBar.Children.Clear();
 
-		var tabButton = CreateTabButton(tab);
-		TabHeaderBar.Children.Insert(TabHeaderBar.Children.Count - 1, tabButton);
-
-		// ✅ Use the custom view here
-		var workspace = new Views.WorkspaceView
+		foreach (var tab in ViewModel.OpenTabs)
 		{
-			Title = title
-		};
+			var button = CreateTabButton(tab);
+			TabHeaderBar.Children.Add(button);
+		}
 
-		tabContentLookup[tabId] = workspace;
-		ActivateTab(tabId);
+		// ✅ Always add the "+" button at the end
+		var addButton = new Button
+		{
+			Text = "+",
+			BackgroundColor = Colors.LightGray,
+			WidthRequest = 40
+		};
+		addButton.Clicked += OnNewTabClicked;
+
+		TabHeaderBar.Children.Add(addButton);
 	}
 
 
@@ -59,11 +67,15 @@ public partial class MainPage : ContentPage
 
 		closeButton.Clicked += (s, e) =>
 		{
-			CloseTab(tab.Id);
+			ViewModel.CloseTab(tab.Id);
+			RebuildTabHeaders();
 		};
 
 		var tapGesture = new TapGestureRecognizer();
-		tapGesture.Tapped += (s, e) => ActivateTab(tab.Id);
+		tapGesture.Tapped += (s, e) =>
+		{
+			ViewModel.ActivateTab(tab.Id);
+		};
 
 		var layout = new Frame
 		{
@@ -78,65 +90,9 @@ public partial class MainPage : ContentPage
 		};
 
 		layout.GestureRecognizers.Add(tapGesture);
-		layout.ClassId = tab.Id.ToString(); // Use ClassId to track which tab this represents
+		layout.ClassId = tab.Id.ToString();
 
 		return layout;
 	}
-
-	private void ActivateTab(Guid tabId)
-	{
-		activeTabId = tabId;
-		if (tabContentLookup.TryGetValue(tabId, out var content))
-		{
-			TabContentArea.Content = content;
-		}
-
-		// Update visuals
-		foreach (var view in TabHeaderBar.Children)
-		{
-			if (view is Frame frame && frame.ClassId != null)
-			{
-				frame.BackgroundColor = (frame.ClassId == tabId.ToString())
-					? Colors.LightSkyBlue
-					: Colors.LightBlue;
-			}
-		}
-	}
-
-	private void CloseTab(Guid tabId)
-	{
-		// Remove tab info
-		var tab = openTabs.FirstOrDefault(t => t.Id == tabId);
-		if (tab != null)
-			openTabs.Remove(tab);
-
-		// Remove UI
-		var frameToRemove = TabHeaderBar.Children
-			.FirstOrDefault(v => v is Frame f && f.ClassId == tabId.ToString());
-		if (frameToRemove != null)
-			TabHeaderBar.Children.Remove(frameToRemove);
-
-		tabContentLookup.Remove(tabId);
-
-		if (activeTabId == tabId)
-		{
-			if (openTabs.Count > 0)
-				ActivateTab(openTabs.Last().Id);
-			else
-			{
-				TabContentArea.Content = new Label
-				{
-					Text = "No tabs open.",
-					FontSize = 18
-				};
-				activeTabId = null;
-			}
-		}
-	}
-
-	private class TabInfo
-	{
-		public Guid Id { get; set; }
-		public string Title { get; set; }
-	}
 }
+
