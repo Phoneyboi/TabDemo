@@ -1,0 +1,30 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TabDemo.MainPage"
+             BackgroundColor="White">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Tab Bar -->
+        <ScrollView Orientation="Horizontal"
+                    Grid.Row="0"
+                    BackgroundColor="#f0f0f0"
+                    Padding="5">
+            <HorizontalStackLayout x:Name="TabHeaderBar" Spacing="5">
+                <!-- Tabs will be added here dynamically -->
+                <Button Text="+" Clicked="OnNewTabClicked"
+                        BackgroundColor="LightGray"
+                        WidthRequest="40"/>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Tab Content Area -->
+        <ContentView x:Name="TabContentArea"
+                     Grid.Row="1"
+                     Padding="20"
+                     BackgroundColor="White">
+            <Label Text="No tabs open." FontSize="18" />
+        </ContentView>
+
+    </Grid>
+</ContentPage>
